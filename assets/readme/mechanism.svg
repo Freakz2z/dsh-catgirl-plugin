@@ -1,0 +1,74 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="420" viewBox="0 0 1200 420" role="img" aria-labelledby="title desc">
+  <title id="title">Persona virtualization — how the catgirl flavor is rendered locally</title>
+  <desc id="desc">The model answers normally with a 6-token persona; the session log stores the raw text; a local render layer adds the catgirl flavor at zero LLM token cost.</desc>
+
+  <defs>
+    <linearGradient id="bg2" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#1a1226"/>
+      <stop offset="1" stop-color="#120d1b"/>
+    </linearGradient>
+    <linearGradient id="accent2" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#ff7eb6"/>
+      <stop offset="1" stop-color="#ff9ec4"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="1200" height="420" rx="24" fill="url(#bg2)"/>
+
+  <text x="56" y="64" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, PingFang SC, sans-serif" font-size="30" font-weight="700" fill="#f2edf7">Persona Virtualization</text>
+  <text x="56" y="98" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, PingFang SC, sans-serif" font-size="20" fill="#9a8fb0">模型只输出正常文本，猫娘风味由本地渲染层完成——会话日志零污染</text>
+
+  <!-- 1. 用户输入 -->
+  <g transform="translate(56 140)">
+    <rect x="0" y="0" width="200" height="120" rx="16" fill="#221a30" stroke="#3a2f4d" stroke-width="1"/>
+    <text x="100" y="52" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, PingFang SC, sans-serif" font-size="22" font-weight="600" fill="#f2edf7">用户输入</text>
+    <text x="100" y="84" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, PingFang SC, sans-serif" font-size="18" fill="#9a8fb0">帮我写个排序算法</text>
+  </g>
+
+  <!-- 箭头 -->
+  <path d="M256 200 L310 200" stroke="#3a2f4d" stroke-width="2" fill="none"/>
+  <path d="M310 194 L322 200 L310 206 Z" fill="#3a2f4d"/>
+
+  <!-- 2. DeepSeek -->
+  <g transform="translate(330 140)">
+    <rect x="0" y="0" width="200" height="120" rx="16" fill="#221a30" stroke="#3a2f4d" stroke-width="1"/>
+    <text x="100" y="52" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, PingFang SC, sans-serif" font-size="22" font-weight="600" fill="#f2edf7">DeepSeek</text>
+    <text x="100" y="84" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, PingFang SC, sans-serif" font-size="18" fill="#c9bfd8">正常、简洁回答</text>
+    <rect x="40" y="96" width="120" height="18" rx="9" fill="#3a2f4d"/>
+    <text x="100" y="109" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="13" fill="#9a8fb0">6-token persona</text>
+  </g>
+
+  <!-- 箭头 -->
+  <path d="M530 200 L584 200" stroke="#3a2f4d" stroke-width="2" fill="none"/>
+  <path d="M584 194 L596 200 L584 206 Z" fill="#3a2f4d"/>
+
+  <!-- 3. 会话日志 -->
+  <g transform="translate(604 140)">
+    <rect x="0" y="0" width="200" height="120" rx="16" fill="#221a30" stroke="#3a2f4d" stroke-width="1"/>
+    <text x="100" y="52" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, PingFang SC, sans-serif" font-size="22" font-weight="600" fill="#f2edf7">会话日志</text>
+    <text x="100" y="84" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, PingFang SC, sans-serif" font-size="18" fill="#c9bfd8">原文保存</text>
+    <text x="100" y="108" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="13" fill="#9a8fb0">模型上下文零污染</text>
+  </g>
+
+  <!-- 箭头 -->
+  <path d="M804 200 L858 200" stroke="#3a2f4d" stroke-width="2" fill="none"/>
+  <path d="M858 194 L870 200 L858 206 Z" fill="#3a2f4d"/>
+
+  <!-- 4. Neko 渲染层 -->
+  <g transform="translate(878 140)">
+    <rect x="0" y="0" width="200" height="120" rx="16" fill="#ff7eb6"/>
+    <text x="100" y="52" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, PingFang SC, sans-serif" font-size="22" font-weight="700" fill="#161021">Neko 渲染层</text>
+    <text x="100" y="84" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, PingFang SC, sans-serif" font-size="18" font-weight="600" fill="#161021">本地喵化</text>
+    <rect x="40" y="96" width="120" height="18" rx="9" fill="#161021" opacity="0.85"/>
+    <text x="100" y="109" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="13" font-weight="700" fill="#ff7eb6">0 LLM token</text>
+  </g>
+
+  <!-- 底部结果行 -->
+  <g transform="translate(56 300)">
+    <rect x="0" y="0" width="1088" height="72" rx="16" fill="#221a30" stroke="#3a2f4d" stroke-width="1"/>
+    <text x="24" y="30" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="18" fill="#9a8fb0">session log</text>
+    <text x="24" y="56" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="20" fill="#c9bfd8">已写入 /tmp/qs.py，6 组测试全部 PASS。</text>
+    <text x="544" y="30" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="18" fill="#9a8fb0">你看到的</text>
+    <text x="544" y="56" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, PingFang SC, sans-serif" font-size="20" font-weight="600" fill="#ff7eb6">已写入 /tmp/qs.py，6 组测试全部 PASS。喵~ (｡･ω･｡)</text>
+  </g>
+</svg>
