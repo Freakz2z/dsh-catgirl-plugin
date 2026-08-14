@@ -1,17 +1,19 @@
-<p align="center">
-  <img src="./assets/readme/hero.jpg" width="100%" alt="dsh-catgirl-plugin — 为 DeepSeek Harness 打造的 token 高效猫娘人格运行时：首个请求新输入 -67%，稳态缓存命中 -66%，猫娘风味本地渲染、0 LLM token 成本">
-</p>
+<div align="center">
 
-**简体中文 | [English](README_en.md)**
+<img src="./assets/logo.png" width="160" alt="Neko logo — 像素风蓝发猫娘女仆">
 
 # dsh-catgirl-plugin
 
-**Neko — 一个为 DeepSeek Harness 打造的 token 高效人格运行时。**
+**一个为 DeepSeek Harness 打造的 token 高效人格运行时。**
 
 把人格留在界面，把智能留给模型。
 
+**简体中文 | [English](README_en.md)**
+
+</div>
+
 <p align="center">
-  <img src="./assets/logo.png" width="160" alt="Neko logo — 像素风蓝发猫娘女仆">
+  <img src="./assets/readme/hero.jpg" width="100%" alt="dsh-catgirl-plugin — 为 DeepSeek Harness 打造的 token 高效猫娘人格运行时：首个请求新输入 -67%，稳态缓存命中 -66%，猫娘风味本地渲染、0 LLM token 成本">
 </p>
 
 ## 效果示例
@@ -46,14 +48,14 @@
 |---|---|---|---|---|
 | 基线（无插件） | 12,372 | 12,520 | 25,856 | 838 |
 | 传统猫娘 | 12,576 | 13,156 | 26,240 | 860 |
-| **Neko Lite + Economy** | **3,881** | **4,178** | **8,960** | 739 |
+| **Lite + Economy** | **3,881** | **4,178** | **8,960** | 739 |
 
 ### 稳态
 
 | 配置 | 新输入 | 缓存命中 |
 |---|---|---|
 | 基线 | 497 | 38,144 |
-| **Neko Lite + Economy** | 386 | **12,800**（-66%） |
+| **Lite + Economy** | 386 | **12,800**（-66%） |
 
 **结论**
 
@@ -63,9 +65,9 @@
 
 ## 质量对比
 
-5 类任务 × 基线 vs Neko（真实 API）：**质量无退化**，模型自适应（web 任务用 `curl` 绕过、subagent 任务直接回答）。
+5 类任务 × 基线 vs 本插件（真实 API）：**质量无退化**，模型自适应（web 任务用 `curl` 绕过、subagent 任务直接回答）。
 
-| 任务 | 工具状态 | 基线质量 | Neko 质量 | 基线 token（新输入/缓存） | Neko token |
+| 任务 | 工具状态 | 基线质量 | 插件质量 | 基线 token（新输入/缓存） | 插件 token |
 |---|---|---|---|---|---|
 | 编码 | 保留 | ✅ | ✅（+边界处理） | 309 / 37,760 | 725 / 22,016 |
 | Web 搜索 | **被裁** | ✅ 新闻数据 | ✅ 实时 API（curl） | 2,476 / 65,408 | 1,403 / 17,024 |
@@ -73,7 +75,7 @@
 | 纯问答 | 无工具 | ✅ 详细 | ✅ 简洁 | 192 / 12,288 | 149 / 3,840 |
 | Subagent | **被裁** | ⚠️ 输出截断 | ✅ 直接回答 | 18,702 / 61,312 | 189 / 3,840 |
 
-**退化边界**：需要专用工具的任务（subagent 并行、skill 调用）——模型会改变策略。`enable_tool` 渐进式披露解决这个问题：
+**退化边界**：需要专用工具的任务（subagent 并行、skill 调用）——模型会改变策略。`enable_tool` 渐进式披露解决：
 
 ```text
 模型：enable_tool("subagent") → 工具已解锁
@@ -82,15 +84,13 @@
 
 实测：模型识别到 subagent 缺失 → 调用 `enable_tool` → 并行派发两个子代理 → 正确汇总。**能力完整恢复**，父 agent 的工具 schema 在解锁前保持最小（省 ~2,000 token/请求）。
 
-## 安装
+## 快速开始
 
 ```sh
-dsh plugin --profile demo add ./catgirl-plugin
+dsh plugin --profile demo add dsh-catgirl-plugin
 ```
 
-或从 GitHub：`dsh plugin --profile demo add github:you/dsh-catgirl-plugin`（需 `prepare` 构建脚本，见 [publish 指南](https://github.com/deepseek-ai/deepseek-harness/blob/main/docs/user/develop/basic/publish.md)）。
-
-## 配置
+然后加入 profile patch：
 
 ```yaml
 - insert:
@@ -127,7 +127,7 @@ Web UI 渲染（可选）：安装 `dsh-catgirl-plugin-client` 并加入 profile
 
 ## RoadMap（V2）
 
-- **工具档位切换**（Neko Coding / Normal / Chat）：按任务类型自动选工具集
+- **工具档位切换**（Coding / Normal / Chat）：按任务类型自动选工具集
 - **Reasoning Router**：社交对话关 reasoning，复杂任务开 high/max（收益最大，风险也最大）
 - **纯聊天档**：只留 2-3 个工具
 - **自适应工具披露**：按任务类型预判解锁
@@ -151,9 +151,8 @@ node client/decorate-test.mjs  # 喵化逻辑单元测试
 
 `overlays/` 下的测试 overlay 含绝对路径，使用前请替换为你的 checkout 路径。
 
-### 构建客户端插件
-
-npm registry 的 rc 包依赖链损坏（`dsh-compact` 未发布），需要从 harness checkout 链接依赖：
+<details>
+<summary>构建客户端插件（npm registry 依赖链损坏，需从 harness checkout 链接）</summary>
 
 ```sh
 cd client
@@ -169,6 +168,8 @@ ln -s <harness>/vendor/cordis node_modules/@deepseek-ai/cordis
 npx tsc --noEmit && npx tsdown
 npx tsc src/index.ts --outDir lib --module esnext --target es2022 --moduleResolution bundler --skipLibCheck
 ```
+
+</details>
 
 ## License
 

@@ -1,17 +1,19 @@
-<p align="center">
-  <img src="./assets/readme/hero.jpg" width="100%" alt="dsh-catgirl-plugin — a token-efficient catgirl persona runtime for DeepSeek Harness: -67% new input on the first request, -66% cache reads in steady state, catgirl flavor rendered locally at zero LLM token cost">
-</p>
+<div align="center">
 
-**[简体中文](README.md) | English**
+<img src="./assets/logo.png" width="160" alt="Neko logo — a pixel-art blue-haired catgirl maid">
 
 # dsh-catgirl-plugin
 
-**Neko — a token-efficient persona runtime for DeepSeek Harness.**
+**A token-efficient persona runtime for DeepSeek Harness.**
 
 Keep personality in the interface, intelligence in the model.
 
+**[简体中文](README.md) | English**
+
+</div>
+
 <p align="center">
-  <img src="./assets/logo.png" width="160" alt="Neko logo — a pixel-art blue-haired catgirl maid">
+  <img src="./assets/readme/hero.jpg" width="100%" alt="dsh-catgirl-plugin — a token-efficient catgirl persona runtime for DeepSeek Harness: -67% new input on the first request, -66% cache reads in steady state, catgirl flavor rendered locally at zero LLM token cost">
 </p>
 
 ## Example
@@ -46,14 +48,14 @@ Real DeepSeek API, same 4-step coding task (write quicksort + save + run), 2026-
 |---|---|---|---|---|
 | Baseline (no plugin) | 12,372 | 12,520 | 25,856 | 838 |
 | Traditional catgirl | 12,576 | 13,156 | 26,240 | 860 |
-| **Neko Lite + Economy** | **3,881** | **4,178** | **8,960** | 739 |
+| **Lite + Economy** | **3,881** | **4,178** | **8,960** | 739 |
 
 ### Steady state
 
 | Config | New input | Cache reads |
 |---|---|---|
 | Baseline | 497 | 38,144 |
-| **Neko Lite + Economy** | 386 | **12,800** (-66%) |
+| **Lite + Economy** | 386 | **12,800** (-66%) |
 
 **Findings**
 
@@ -63,9 +65,9 @@ Real DeepSeek API, same 4-step coding task (write quicksort + save + run), 2026-
 
 ## Quality comparison
 
-5-task battery, baseline vs Neko (real API): **no quality degradation**; the model adapts to missing tools (curl instead of web_search, direct answers instead of subagents).
+5-task battery, baseline vs this plugin (real API): **no quality degradation**; the model adapts to missing tools (curl instead of web_search, direct answers instead of subagents).
 
-| Task | Tool status | Baseline quality | Neko quality | Baseline tokens (new/cache) | Neko tokens |
+| Task | Tool status | Baseline quality | Plugin quality | Baseline tokens (new/cache) | Plugin tokens |
 |---|---|---|---|---|---|
 | Coding | kept | ✅ | ✅ (+edge cases) | 309 / 37,760 | 725 / 22,016 |
 | Web search | **trimmed** | ✅ news data | ✅ live API (curl) | 2,476 / 65,408 | 1,403 / 17,024 |
@@ -82,15 +84,13 @@ Model: subagent × 2 (parallel delegation) → subagents done → summary
 
 Measured end-to-end: the model recognized the missing tool, called `enable_tool`, delegated to two parallel subagents, and summarized correctly. **Capability fully restored**, while the parent's tool schemas stay minimal until escalation (~2,000 tokens/request saved).
 
-## Install
+## Quick start
 
 ```sh
-dsh plugin --profile demo add ./catgirl-plugin
+dsh plugin --profile demo add dsh-catgirl-plugin
 ```
 
-Or from GitHub: `dsh plugin --profile demo add github:you/dsh-catgirl-plugin` (needs a `prepare` build script, see the [publish guide](https://github.com/deepseek-ai/deepseek-harness/blob/main/docs/user/develop/basic/publish.md)).
-
-## Config
+Then add to the profile patch:
 
 ```yaml
 - insert:
@@ -127,7 +127,7 @@ Web UI rendering (optional): install `dsh-catgirl-plugin-client` and add it to t
 
 ## RoadMap (V2)
 
-- **Tool profile switching** (Neko Coding / Normal / Chat): pick the tool set by task type
+- **Tool profile switching** (Coding / Normal / Chat): pick the tool set by task type
 - **Reasoning Router**: reasoning off for social chat, high/max for complex tasks (biggest win, biggest risk)
 - **Chat-only tier**: keep just 2-3 tools
 - **Adaptive tool disclosure**: predict unlocks by task type
@@ -151,9 +151,8 @@ node client/decorate-test.mjs  # decoration unit test
 
 The test overlays under `overlays/` contain absolute paths; replace them with your checkout path before use.
 
-### Building the client plugin
-
-The npm registry rc chain is broken (`dsh-compact` unpublished); link deps from a harness checkout:
+<details>
+<summary>Building the client plugin (npm registry chain is broken; link deps from a harness checkout)</summary>
 
 ```sh
 cd client
@@ -169,6 +168,8 @@ ln -s <harness>/vendor/cordis node_modules/@deepseek-ai/cordis
 npx tsc --noEmit && npx tsdown
 npx tsc src/index.ts --outDir lib --module esnext --target es2022 --moduleResolution bundler --skipLibCheck
 ```
+
+</details>
 
 ## License
 
