@@ -1,0 +1,38 @@
+{
+  "name": "dsh-catgirl-plugin-client",
+  "version": "0.1.0",
+  "description": "Neko web client: decorates assistant text at the conversation render layer (session log stays raw)",
+  "type": "module",
+  "main": "lib/index.js",
+  "types": "lib/types/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./lib/types/index.d.ts",
+      "default": "./lib/index.js"
+    },
+    "./client": {
+      "types": "./lib/types/client/index.d.ts",
+      "default": "./lib/client.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "lib"
+  ],
+  "dsh": {
+    "client": {
+      "inject": [
+        "@deepseek-ai/dsh-client-ui-conversation"
+      ],
+      "platform": "web"
+    }
+  },
+  "dependencies": {
+    "@types/react": "^18.3.31",
+    "react": "^18.0.0"
+  },
+  "devDependencies": {
+    "tsdown": "^0.22.2",
+    "typescript": "^5.5.0"
+  }
+}

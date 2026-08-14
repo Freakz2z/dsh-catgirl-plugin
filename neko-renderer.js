@@ -30,7 +30,7 @@ export const Config = z.object({
 export function decorate(text) {
   const parts = String(text).split(/(```[\s\S]*?```)/g)
   const body = parts.map((part, i) =>
-    i % 2 === 1 ? part : part.replace(/([。！？!?])(?=\s|$)/g, '$1喵~'),
+    i % 2 === 1 ? part : part.replace(/([。！？!?])(?=\s|$|[^。！？!?])/g, '$1喵~'),
   ).join('')
   return body.replace(/\n+$/, '') + ' (｡･ω･｡)\n'
 }

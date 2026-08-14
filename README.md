@@ -37,8 +37,9 @@ Neko 插件层（本地渲染：喵化 / 颜文字 / 称呼）
 | 插件 | 作用 | Token 影响 |
 |---|---|---|
 | `catgirl-lite.js` | 极短 persona（6 token）：`Be concise, friendly, and natural.` | 每请求 +6（可忽略） |
-| `neko-renderer.js` | 显示层本地渲染：句尾「喵~」+ 颜文字，代码块原样保留 | 0 |
+| `neko-renderer.js` | headless 显示层本地渲染：句尾「喵~」+ 颜文字，代码块原样保留 | 0 |
 | `catgirl-economy.js` | 工具裁剪 + **渐进式披露**：25 个工具 → 8 个，模型可调用 `enable_tool` 按需解锁（subagent/web_search/skill 等） | **每请求 -8,491 token（-69%）**，解锁时只付对应工具 schema |
+| `client/`（`dsh-catgirl-plugin-client`） | **Web UI 渲染**：shadow 默认 assistant 渲染器，喵化显示文本；会话日志保持原文 | 0 |
 | `index.js` | 传统长 persona 猫娘（对比用，不推荐） | 每请求 +数百 |
 | `usage-meter.js` | 开发工具：把每次请求的 usage chunk 写入文件 | 0 |
 
@@ -153,15 +154,43 @@ dsh plugin --profile demo add ./catgirl-plugin
 npm install
 node smoke-test.mjs          # mock ctx 冒烟测试
 node composition-test.mjs    # 真实 Loader 组合测试（需 deepseek-harness 仓库已构建）
+node client/decorate-test.mjs  # 喵化逻辑单元测试
 ```
 
 `overlays/` 下的测试 overlay 含绝对路径，使用前请替换为你的 checkout 路径。
 
+### 构建客户端插件 / Building the client plugin
+
+npm registry 的 rc 包依赖链损坏（`dsh-compact` 未发布），需要从 harness checkout 链接依赖：
+
+The npm registry rc chain is broken (`dsh-compact` unpublished); link deps from a harness checkout:
+
+```sh
+cd client
+npm install react tsdown typescript @types/react@18.3.31 --no-audit --no-fund
+mkdir -p node_modules/@deepseek-ai
+ln -s <harness>/packages/attachment/attachment node_modules/@deepseek-ai/dsh-attachment
+ln -s <harness>/packages/client/runtime node_modules/@deepseek-ai/dsh-client-runtime
+ln -s <harness>/packages/client/ui-attachment node_modules/@deepseek-ai/dsh-client-ui-attachment
+ln -s <harness>/packages/client/ui-conversation node_modules/@deepseek-ai/dsh-client-ui-conversation
+ln -s <harness>/packages/client/ui-primitives node_modules/@deepseek-ai/dsh-client-ui-primitives
+ln -s <harness>/packages/client/ui-slots node_modules/@deepseek-ai/dsh-client-ui-slots
+ln -s <harness>/vendor/cordis node_modules/@deepseek-ai/cordis
+npx tsc --noEmit && npx tsdown
+npx tsc src/index.ts --outDir lib --module esnext --target es2022 --moduleResolution bundler --skipLibCheck
+```
+
 ## 已知限制 / Known Limitations
 
-- **渲染层仅支持 headless**：`neko-renderer` 通过替换 headless 显示层实现；Web UI 的渲染需要客户端插件（`session/event` 渲染，未来工作）
+- **Web UI 渲染已支持**：`client/` 客户端插件 shadow 默认 assistant 渲染器（priority -1），喵化显示文本；会话日志保持原文。若组件崩溃会自动 abdicate 回退默认渲染
 - **工具裁剪是固定档位 + 按需解锁**：初始为"最小编码集"，`enable_tool` 按需解锁；纯聊天档（2-3 个工具）和自适应档（Reasoning Router）是未来工作
 - **headless 一次性进程不等待后台 subagent**：`run_in_background: true` 的子代理会在父进程退出时被终止（headless 应用限制，Web UI 无此问题）；同步模式（`run_in_background: false`）完整可用
+- **npm registry 的 rc 包依赖链损坏**：`@deepseek-ai/dsh-client-runtime` 依赖未发布的 `@deepseek-ai/dsh-compact`，`npm install` 客户端包会 404；构建时用 repo 的 node_modules 链接（见 `client/` 构建说明）
+
+- **Web UI rendering supported**: the `client/` plugin shadows the default assistant renderer (priority -1) and decorates display text; the session log stays raw. A component crash abdicates back to the default renderer
+- **Tool trimming is a fixed profile + on-demand unlock**: starts at the minimal coding set; `enable_tool` unlocks on demand; a chat-only tier and adaptive tier (reasoning routing) are future work
+- **Headless one-shot does not wait for background subagents**: `run_in_background: true` children are killed on parent exit (headless app limitation, not the plugin; sync mode works)
+- **npm registry rc packages have a broken dep chain**: `@deepseek-ai/dsh-client-runtime` depends on unpublished `@deepseek-ai/dsh-compact`; building the client package requires linking from a harness checkout (see `client/` build notes)
 - **`nya` 工具输出随机**（`Math.random()`），不适合快照测试
 - **人设文案为中文单语**：`INTENSITY_TEXT` 在 `index.js` 中，可自行修改或通过 `traits` 扩展
 

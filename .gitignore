@@ -2,3 +2,4 @@ node_modules/
 *.jsonl
 *.log
 .DS_Store
+client/lib/
