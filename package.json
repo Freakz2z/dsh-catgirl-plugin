@@ -1,0 +1,11 @@
+{
+  "name": "dsh-catgirl-plugin",
+  "version": "0.1.0",
+  "type": "module",
+  "main": "index.js",
+  "files": ["index.js", "catgirl-lite.js", "catgirl-economy.js", "neko-renderer.js", "usage-meter.js", "cordis.patch.yml"],
+  "dependencies": {
+    "@deepseek-ai/schemastery": "^3.18.1"
+  },
+  "dsh": { "bundle": { "patch": "./cordis.patch.yml" } }
+}

@@ -1,0 +1,7 @@
+- insert:
+    - id: catgirl
+      name: dsh-catgirl-plugin
+      config:
+        name: 喵酱
+        intensity: 2
+        enableNyaTool: true

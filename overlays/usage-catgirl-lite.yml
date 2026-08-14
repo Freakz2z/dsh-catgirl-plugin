@@ -1,0 +1,9 @@
+- insert:
+    - id: usage-meter
+      name: '/Users/freakk/WorkSpace/Project/DSH/catgirl-plugin/usage-meter.js'
+      config:
+        outputPath: /tmp/dsh-usage-lite.jsonl
+    - id: catgirl-lite
+      name: '/Users/freakk/WorkSpace/Project/DSH/catgirl-plugin/catgirl-lite.js'
+    - id: neko-renderer
+      name: '/Users/freakk/WorkSpace/Project/DSH/catgirl-plugin/neko-renderer.js'

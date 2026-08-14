@@ -1,0 +1,11 @@
+- insert:
+    - id: usage-meter
+      name: '/Users/freakk/WorkSpace/Project/DSH/catgirl-plugin/usage-meter.js'
+      config:
+        outputPath: /tmp/dsh-usage-catgirl.jsonl
+    - id: catgirl
+      name: '/Users/freakk/WorkSpace/Project/DSH/catgirl-plugin/index.js'
+      config:
+        name: 喵酱
+        intensity: 2
+        enableNyaTool: true

@@ -1,0 +1,5 @@
+- insert:
+    - id: usage-meter
+      name: '/Users/freakk/WorkSpace/Project/DSH/catgirl-plugin/usage-meter.js'
+      config:
+        outputPath: /tmp/dsh-usage-baseline.jsonl
