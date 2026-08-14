@@ -180,6 +180,15 @@ npx tsc --noEmit && npx tsdown
 npx tsc src/index.ts --outDir lib --module esnext --target es2022 --moduleResolution bundler --skipLibCheck
 ```
 
+## RoadMap（V2）
+
+- **工具档位切换（Neko Coding / Neko Normal / Neko Chat）**：按任务类型自动选择工具集——编码任务用最小编码集，研究/委派任务保留 web/subagent。质量测试显示固定档位是当前主要权衡点
+- **Reasoning Router**：社交/琐碎对话关 reasoning，复杂任务开 high/max。潜在收益最大，但错误路由一次复杂任务的质量损失比省 token 严重，放 V2 后期
+- **纯聊天档**：只留 2-3 个工具（bash + read），聊天场景极致省 token
+- **自适应工具披露**：`enable_tool` 目前是模型主动调用；未来可按任务类型预判解锁
+- **Web UI 状态机**：agent 生命周期 → 猫娘状态（工作中/搜索/敲代码/炸毛），基于 `session/event` 渲染，0 LLM token
+- **npm 发布**：`dsh-catgirl-plugin` + `dsh-catgirl-plugin-client` 已就绪，待 `npm adduser` 后发布
+
 ## 已知限制 / Known Limitations
 
 - **Web UI 渲染已支持**：`client/` 客户端插件 shadow 默认 assistant 渲染器（priority -1），喵化显示文本；会话日志保持原文。若组件崩溃会自动 abdicate 回退默认渲染
