@@ -69,6 +69,27 @@ Same task (write quicksort + save + run, 4-step agent task), real DeepSeek API:
 2. 极短 persona 本身 ≈ 基线——它的价值是让模型输出正常文本，把猫娘风味让给本地渲染
 3. **工具 schema 裁剪才是省 token 引擎**——`ctx.tools.restrict()` 在 agent 作用域裁剪，模型看到的与可执行的保持一致
 
+## 质量对比测试 / Quality comparison
+
+同一批任务在基线和 Neko Lite + Economy 上各跑一遍（真实 API，2026-08-14）：
+
+Same task battery on baseline vs Neko Lite + Economy (real API):
+
+| 任务 / Task | 工具状态 | 基线质量 | Lite 质量 | 基线 token（新输入/缓存） | Lite token（新输入/缓存） |
+|---|---|---|---|---|---|
+| 编码（斐波那契）/ Coding | 保留 | ✅ 正确 | ✅ 正确（+边界处理） | 309 / 37,760 | 725 / 22,016 |
+| Web 搜索（GitHub stars）/ Web | **被裁** | ✅ 新闻数据 | ✅ 实时 API（curl 绕过） | 2,476 / 65,408 | 1,403 / 17,024 |
+| 文件搜索 / File search | 保留 | ✅ 215 个 | ✅ 215 个 | 7,066 / 40,832 | 3,490 / 22,912 |
+| 纯问答（KV cache）/ Q&A | 无工具 | ✅ 详细 | ✅ 简洁 | 192 / 12,288 | 149 / 3,840 |
+| Subagent 并行 / Subagent | **被裁** | ⚠️ 派发但输出截断 | ✅ 直接回答（诚实说明） | 18,702 / 61,312 | 189 / 3,840 |
+
+### 质量结论 / Quality findings
+
+1. **质量无退化**：4/5 任务持平或更好；模型自适应能力强（web 任务用 `curl` 绕过缺失的 web 工具，subagent 任务直接回答）
+2. **真正的退化边界**：需要专用工具的任务（subagent 并行、skill 调用）——模型会改变策略，无法完成"必须用工具"的任务
+3. **Token 全面下降**：缓存命中在所有任务中 -40% ~ -94%
+4. **启示**：固定最小编码集适合编码任务，不适合研究/委派任务——按任务类型切换工具档位（Neko Coding / Neko Normal）是下一步方向
+
 ## 安装 / Install
 
 ```sh
