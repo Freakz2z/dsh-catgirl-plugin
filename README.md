@@ -38,7 +38,7 @@ Neko 插件层（本地渲染：喵化 / 颜文字 / 称呼）
 |---|---|---|
 | `catgirl-lite.js` | 极短 persona（6 token）：`Be concise, friendly, and natural.` | 每请求 +6（可忽略） |
 | `neko-renderer.js` | 显示层本地渲染：句尾「喵~」+ 颜文字，代码块原样保留 | 0 |
-| `catgirl-economy.js` | 工具裁剪：25 个工具 → 8 个（bash/read/write/edit/glob/grep/str_replace_editor/todo_write） | **每请求 -8,491 token（-69%）** |
+| `catgirl-economy.js` | 工具裁剪 + **渐进式披露**：25 个工具 → 8 个，模型可调用 `enable_tool` 按需解锁（subagent/web_search/skill 等） | **每请求 -8,491 token（-69%）**，解锁时只付对应工具 schema |
 | `index.js` | 传统长 persona 猫娘（对比用，不推荐） | 每请求 +数百 |
 | `usage-meter.js` | 开发工具：把每次请求的 usage chunk 写入文件 | 0 |
 
@@ -89,6 +89,21 @@ Same task battery on baseline vs Neko Lite + Economy (real API):
 2. **真正的退化边界**：需要专用工具的任务（subagent 并行、skill 调用）——模型会改变策略，无法完成"必须用工具"的任务
 3. **Token 全面下降**：缓存命中在所有任务中 -40% ~ -94%
 4. **启示**：固定最小编码集适合编码任务，不适合研究/委派任务——按任务类型切换工具档位（Neko Coding / Neko Normal）是下一步方向
+
+## 渐进式披露解决 Subagent 问题 / Progressive disclosure
+
+`catgirl-economy` 注册一个极小的 `enable_tool` 工具（~80 token），模型需要被裁的工具时按需解锁：
+
+`catgirl-economy` registers a tiny `enable_tool` tool (~80 tokens); the model unlocks trimmed tools on demand:
+
+```text
+模型：enable_tool("subagent") → 工具已解锁
+模型：subagent × 2（并行委派）→ 子代理完成 → 汇总
+```
+
+实测（真实 API）：模型识别到 subagent 缺失 → 调用 `enable_tool` → 并行派发两个子代理 → 同步等待 → 正确汇总。**能力完整恢复**，而父 agent 的每请求工具 schema 在解锁前保持最小（省 ~2,000 token/请求）。委派本身的成本（子代理的工作量）是固有的，与插件无关。
+
+Measured (real API): the model recognized the missing tool, called `enable_tool`, delegated to two parallel subagents, waited synchronously, and summarized correctly. **Capability fully restored**, while the parent's per-request tool schemas stay minimal until escalation (~2,000 tokens/request saved). The delegation cost itself (the child's work) is inherent and plugin-independent.
 
 ## 安装 / Install
 
@@ -145,7 +160,8 @@ node composition-test.mjs    # 真实 Loader 组合测试（需 deepseek-harness
 ## 已知限制 / Known Limitations
 
 - **渲染层仅支持 headless**：`neko-renderer` 通过替换 headless 显示层实现；Web UI 的渲染需要客户端插件（`session/event` 渲染，未来工作）
-- **工具裁剪是固定档位**：当前是"最小编码集"；纯聊天档（2-3 个工具）和自适应档（Reasoning Router）是未来工作
+- **工具裁剪是固定档位 + 按需解锁**：初始为"最小编码集"，`enable_tool` 按需解锁；纯聊天档（2-3 个工具）和自适应档（Reasoning Router）是未来工作
+- **headless 一次性进程不等待后台 subagent**：`run_in_background: true` 的子代理会在父进程退出时被终止（headless 应用限制，Web UI 无此问题）；同步模式（`run_in_background: false`）完整可用
 - **`nya` 工具输出随机**（`Math.random()`），不适合快照测试
 - **人设文案为中文单语**：`INTENSITY_TEXT` 在 `index.js` 中，可自行修改或通过 `traits` 扩展
 

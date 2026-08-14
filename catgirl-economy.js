@@ -1,10 +1,14 @@
 /**
- * catgirl-economy — Token Optimizer：工具 schema 裁剪。
+ * catgirl-economy — Token Optimizer：工具 schema 裁剪 + 渐进式披露。
  *
  * 在 agent 创建时（agent/created，早于首次 prompt assembly）把模型可见的
  * 工具裁剪到最小编码集。被隐藏的工具 schema 不再进入每个请求，直接省下
- * 数百到数千 token/请求。裁剪在 agent 作用域内进行，与 lookup/execute
- * 保持一致（ctx.tools.restrict 的语义保证）。
+ * 数百到数千 token/请求。
+ *
+ * 渐进式披露（escalate）：注册一个极小的 `enable_tool` 工具（~50 token），
+ * 模型需要被裁的工具（subagent、web_search 等）时调用它，插件在 agent
+ * 作用域内解除对应工具的隐藏。这是 docs 推荐的 ToolSearch / progressive
+ * disclosure 模式：registry 保持 presentation、lookup、execution 一致。
  */
 
 import z from '@deepseek-ai/schemastery'
@@ -23,16 +27,75 @@ const DEFAULT_ALLOW = [
   'todo_write',
 ]
 
+/** 可被 enable_tool 解锁的隐藏工具。 */
+const ESCALATABLE = [
+  'subagent',
+  'send_message',
+  'list_agents',
+  'interrupt_agent',
+  'report',
+  'web_fetch',
+  'web_search',
+  'skill',
+  'workflow',
+  'ralph',
+  'ask_user_question',
+  'read_image',
+  'get_goal',
+  'create_goal',
+  'update_goal',
+  'job_output',
+  'job_list',
+  'job_kill',
+]
+
 /**
  * Plugin config.
- * - `allow`: 保留的工具名列表（其余全局工具对模型隐藏）。
+ * - `allow`: 初始保留的工具名列表（其余全局工具对模型隐藏）。
+ * - `escalate`: 注册 `enable_tool` 工具，允许模型按需解锁隐藏工具。
  */
 export const Config = z.object({
   allow: z.array(z.string()).default(DEFAULT_ALLOW),
+  escalate: z.boolean().default(true),
 })
 
 export function apply(ctx, config) {
   ctx.on('agent/created', ({ agent }) => {
-    agent.ctx.effect(() => agent.ctx.tools.restrict({ allow: config.allow }), 'catgirl-economy.restrict()')
+    const state = { allow: [...config.allow], disposer: null }
+    const applyRestriction = () => {
+      state.disposer?.()
+      state.disposer = agent.ctx.tools.restrict({ allow: state.allow })
+    }
+    applyRestriction()
+
+    if (config.escalate) {
+      agent.ctx.effect(() => agent.ctx.tools.register({
+        name: 'enable_tool',
+        description: 'Add a hidden tool to this session when you need one that is not currently available. Hidden tools include: subagent, web_search, web_fetch, skill, workflow, ralph, ask_user_question, read_image, goal/job/report tools.',
+        parameters: {
+          type: 'object',
+          properties: {
+            name: {
+              type: 'string',
+              description: 'The exact tool name to enable',
+            },
+          },
+          required: ['name'],
+        },
+        output: {
+          schema: { type: 'string' },
+          render: (_args, value) => [{ type: 'text', text: value }],
+        },
+        async execute(args) {
+          if (state.allow.includes(args.name)) return `Tool ${args.name} is already enabled.`
+          if (!ESCALATABLE.includes(args.name)) {
+            return `Unknown tool ${args.name}. Escalatable tools: ${ESCALATABLE.join(', ')}.`
+          }
+          state.allow.push(args.name)
+          applyRestriction()
+          return `Tool ${args.name} is now enabled for this session.`
+        },
+      }), 'catgirl-economy.enable_tool()')
+    }
   })
 }
