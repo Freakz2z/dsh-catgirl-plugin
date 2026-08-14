@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="./assets/readme/hero.png" width="100%" alt="dsh-catgirl-plugin — token-efficient catgirl persona for DeepSeek Harness: -67% new input on the first request, -66% cache reads in steady state, catgirl flavor rendered locally at zero LLM token cost">
+  <img src="./assets/readme/hero.jpg" width="100%" alt="dsh-catgirl-plugin — token-efficient catgirl persona for DeepSeek Harness: -67% new input on the first request, -66% cache reads in steady state, catgirl flavor rendered locally at zero LLM token cost">
 </p>
 
 # dsh-catgirl-plugin
