@@ -27,11 +27,15 @@
       "platform": "web"
     }
   },
-  "dependencies": {
-    "@types/react": "^18.3.31",
-    "react": "^18.0.0"
-  },
   "devDependencies": {
+    "@deepseek-ai/dsh-attachment": "^0.0.1-rc.1",
+    "@deepseek-ai/dsh-client-runtime": "^0.0.1-rc.1",
+    "@deepseek-ai/dsh-client-ui-attachment": "^0.0.1-rc.2",
+    "@deepseek-ai/dsh-client-ui-conversation": "^0.0.1-rc.1",
+    "@deepseek-ai/dsh-client-ui-primitives": "^0.0.1-rc.1",
+    "@deepseek-ai/dsh-client-ui-slots": "^0.0.1-rc.1",
+    "@types/react": "^18.3.31",
+    "react": "^18.0.0",
     "tsdown": "^0.22.2",
     "typescript": "^5.5.0"
   }
