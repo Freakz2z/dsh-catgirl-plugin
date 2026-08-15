@@ -40,9 +40,12 @@ This plugin does the opposite — **persona virtualization**:
 
 ## Measured results
 
-Real DeepSeek API, same 4-step coding task (write quicksort + save + run), 2026-08-14.
+Real DeepSeek API (2026-08-14): **-67% new input on the first request, -66% cache reads in steady state, no quality degradation**.
 
-### Cold start
+<details>
+<summary>Full comparison data (same task: write quicksort + save + run)</summary>
+
+### Cold start (first agent request, no cache)
 
 | Config | First request new input | Total new input | Total cache reads | Output |
 |---|---|---|---|---|
@@ -50,22 +53,27 @@ Real DeepSeek API, same 4-step coding task (write quicksort + save + run), 2026-
 | Traditional catgirl | 12,576 | 13,156 | 26,240 | 860 |
 | **Lite + Economy** | **3,881** | **4,178** | **8,960** | 739 |
 
-### Steady state
+### Steady state (second run, cache warm)
 
 | Config | New input | Cache reads |
 |---|---|---|
 | Baseline | 497 | 38,144 |
 | **Lite + Economy** | 386 | **12,800** (-66%) |
 
-**Findings**
+### Findings
 
 1. A traditional long-persona catgirl costs **more** tokens (+5%) — persona is a per-request recurring cost
 2. A minimal persona ≈ baseline — its value is letting the model output normal text, leaving the catgirl flavor to local rendering
 3. **Tool schema trimming is the real token saver** — `ctx.tools.restrict()` trims at the agent scope, keeping what the model sees aligned with what it can execute
 
+</details>
+
 ## Quality comparison
 
-5-task battery, baseline vs this plugin (real API): **no quality degradation**; the model adapts to missing tools (curl instead of web_search, direct answers instead of subagents).
+5-task battery (coding / web search / file search / pure Q&A / subagent): **no quality degradation**; the model adapts to missing tools (curl instead of web_search, direct answers instead of subagents).
+
+<details>
+<summary>Full comparison data (baseline vs this plugin)</summary>
 
 | Task | Tool status | Baseline quality | Plugin quality | Baseline tokens (new/cache) | Plugin tokens |
 |---|---|---|---|---|---|
@@ -74,6 +82,8 @@ Real DeepSeek API, same 4-step coding task (write quicksort + save + run), 2026-
 | File search | kept | ✅ 215 files | ✅ 215 files | 7,066 / 40,832 | 3,490 / 22,912 |
 | Pure Q&A | no tools | ✅ detailed | ✅ concise | 192 / 12,288 | 149 / 3,840 |
 | Subagent | **trimmed** | ⚠️ truncated output | ✅ answered directly | 18,702 / 61,312 | 189 / 3,840 |
+
+</details>
 
 **The real boundary**: tasks that require a specialized tool (parallel subagents, skill calls) change strategy. Progressive disclosure solves this:
 
@@ -87,6 +97,7 @@ Measured end-to-end: the model recognized the missing tool, called `enable_tool`
 ## Quick start
 
 ```sh
+# Install from npm
 dsh plugin --profile demo add dsh-catgirl-plugin
 ```
 
