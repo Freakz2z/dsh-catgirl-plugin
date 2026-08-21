@@ -94,6 +94,8 @@
 
 实测：模型识别到 subagent 缺失 → 调用 `enable_tool` → 并行派发两个子代理 → 正确汇总。**能力完整恢复**，父 agent 的工具 schema 在解锁前保持最小（省 ~2,000 token/请求）。
 
+如果请求解锁的工具未安装在当前 profile，`enable_tool` 会返回不可用提示并保留原白名单，会话可以继续正常解锁其他工具。
+
 ## 快速开始
 
 ```sh
@@ -155,9 +157,9 @@ Web UI 渲染（可选）：安装 `dsh-catgirl-plugin-client` 并加入 profile
 
 ```sh
 npm install
-node smoke-test.mjs            # mock ctx 冒烟测试
-node composition-test.mjs      # 真实 Loader 组合测试（需 deepseek-harness 已构建）
-node client/decorate-test.mjs  # 喵化逻辑单元测试
+npm test                       # 人设、工具解锁、渲染与客户端单元测试
+npm run test:composition       # 真实 Loader 组合测试（需 deepseek-harness 已构建）
+npm run pack:check             # 检查 npm 发布内容
 ```
 
 `overlays/` 下的测试 overlay 含绝对路径，使用前请替换为你的 checkout 路径。

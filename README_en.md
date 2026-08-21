@@ -94,6 +94,8 @@ Model: subagent × 2 (parallel delegation) → subagents done → summary
 
 Measured end-to-end: the model recognized the missing tool, called `enable_tool`, delegated to two parallel subagents, and summarized correctly. **Capability fully restored**, while the parent's tool schemas stay minimal until escalation (~2,000 tokens/request saved).
 
+If a requested tool is not installed in the current profile, `enable_tool` reports it as unavailable and preserves the previous allow-list, so the session can continue unlocking other tools.
+
 ## Quick start
 
 ```sh
@@ -155,9 +157,9 @@ Web UI rendering (optional): install `dsh-catgirl-plugin-client` and add it to t
 
 ```sh
 npm install
-node smoke-test.mjs            # mock-ctx smoke test
-node composition-test.mjs      # real Loader composition test (needs a built deepseek-harness checkout)
-node client/decorate-test.mjs  # decoration unit test
+npm test                       # persona, tool-unlock, renderer, and client unit tests
+npm run test:composition       # real Loader composition test (needs a built deepseek-harness checkout)
+npm run pack:check             # inspect the npm package contents
 ```
 
 The test overlays under `overlays/` contain absolute paths; replace them with your checkout path before use.

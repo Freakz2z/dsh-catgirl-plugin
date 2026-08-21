@@ -28,23 +28,49 @@ export const Config = z.object({
 
 /** 本地渲染：句尾加「喵~」，末尾加颜文字；代码块原样保留。 */
 export function decorate(text) {
-  const parts = String(text).split(/(```[\s\S]*?```)/g)
+  const source = String(text)
+  if (source.trim() === '') return source
+
+  const trimmed = source.replace(/\n+$/, '')
+  if (trimmed.endsWith(' (｡･ω･｡)')) return `${trimmed}\n`
+
+  const parts = trimmed.split(/(```[\s\S]*?```)/g)
   const body = parts.map((part, i) =>
-    i % 2 === 1 ? part : part.replace(/([。！？!?])(?=\s|$|[^。！？!?])/g, '$1喵~'),
+    i % 2 === 1 ? part : part.replace(/([。！？!?])(?!喵~)(?=\s|$|[^。！？!?])/g, '$1喵~'),
   ).join('')
-  return body.replace(/\n+$/, '') + ' (｡･ω･｡)\n'
+  return `${body} (｡･ω･｡)\n`
+}
+
+/** 安装 stdout 装饰器，并返回不会覆盖后续替换的精确恢复函数。 */
+export function installRenderer(internals) {
+  const original = internals?.stdout
+  if (!original || typeof original.write !== 'function') {
+    throw new TypeError('neko-renderer requires internals.stdout.write()')
+  }
+
+  const patched = Object.create(original)
+  Object.defineProperty(patched, 'write', {
+    configurable: true,
+    enumerable: true,
+    value(chunk) {
+      return original.write(decorate(String(chunk)))
+    },
+  })
+  internals.stdout = patched
+
+  return () => {
+    if (internals.stdout === patched) internals.stdout = original
+  }
 }
 
 export function apply(ctx, config) {
-  try {
-    const { internals } = require(config.headlessLibPath)
-    const original = internals.stdout
-    internals.stdout = {
-      write(chunk) {
-        return original.write(decorate(String(chunk)))
-      },
+  ctx.effect(() => {
+    try {
+      const { internals } = require(config.headlessLibPath)
+      return installRenderer(internals)
+    } catch {
+      // headless bundle 不存在（如 web profile）时跳过，渲染由 UI 层负责。
+      return () => {}
     }
-  } catch {
-    // headless bundle 不存在（如 web profile）时跳过，渲染由 UI 层负责。
-  }
+  }, 'neko-renderer.stdout()')
 }

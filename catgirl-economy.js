@@ -61,12 +61,28 @@ export const Config = z.object({
 
 export function apply(ctx, config) {
   ctx.on('agent/created', ({ agent }) => {
-    const state = { allow: [...config.allow], disposer: null }
-    const applyRestriction = () => {
+    const state = { allow: [...new Set(config.allow)], disposer: null }
+    const replaceRestriction = (nextAllow) => {
+      const previousAllow = state.allow
+      const hadRestriction = state.disposer !== null
       state.disposer?.()
-      state.disposer = agent.ctx.tools.restrict({ allow: state.allow })
+      state.disposer = null
+
+      try {
+        const nextDisposer = agent.ctx.tools.restrict({ allow: nextAllow })
+        state.allow = nextAllow
+        state.disposer = nextDisposer
+      } catch (error) {
+        // Switching an allow-list requires lifting the old restriction first,
+        // because restrictions intersect. Restore it if the new tool is not
+        // installed in this profile so one failed unlock cannot poison state.
+        if (hadRestriction) {
+          state.disposer = agent.ctx.tools.restrict({ allow: previousAllow })
+        }
+        throw error
+      }
     }
-    applyRestriction()
+    replaceRestriction(state.allow)
 
     if (config.escalate) {
       agent.ctx.effect(() => agent.ctx.tools.register({
@@ -91,9 +107,12 @@ export function apply(ctx, config) {
           if (!ESCALATABLE.includes(args.name)) {
             return `Unknown tool ${args.name}. Escalatable tools: ${ESCALATABLE.join(', ')}.`
           }
-          state.allow.push(args.name)
-          applyRestriction()
-          return `Tool ${args.name} is now enabled for this session.`
+          try {
+            replaceRestriction([...state.allow, args.name])
+            return `Tool ${args.name} is now enabled for this session.`
+          } catch {
+            return `Tool ${args.name} is supported but unavailable in this profile.`
+          }
         },
       }), 'catgirl-economy.enable_tool()')
     }

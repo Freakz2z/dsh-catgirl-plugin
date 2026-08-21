@@ -13,6 +13,10 @@ check('code block untouched', decorate('结果：\n```python\nprint("ok。")\n``
 check('no punctuation still gets kaomoji', decorate('Done') === 'Done (｡･ω･｡)')
 check('trailing newline trimmed', decorate('完成。\n') === '完成。喵~ (｡･ω･｡)')
 check('english punctuation', decorate('All tests pass!') === 'All tests pass!喵~ (｡･ω･｡)')
+check('empty output stays empty', decorate('') === '')
+check('whitespace-only output stays untouched', decorate(' \n') === ' \n')
+check('decoration is idempotent', decorate(decorate('完成。')) === '完成。喵~ (｡･ω･｡)')
+check('existing nya suffix is not duplicated', decorate('完成。喵~') === '完成。喵~ (｡･ω･｡)')
 
 if (failed) { console.error(`\n${failed} check(s) failed`); process.exit(1) }
 console.log('\nall decorate checks passed')
